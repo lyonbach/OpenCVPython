@@ -1,0 +1,8 @@
+{
+    "python.venvPath": "/home/lyonbach/Programs",
+    "python.envFile": "${workspaceFolder}/.env",
+    "gitProjectManager.baseProjectsFolders": [
+        "/home/lyonbach/Repositories"
+    ],
+    "python.pythonPath": "/usr/bin/python3.7"
+}
