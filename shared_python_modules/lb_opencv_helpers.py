@@ -4,12 +4,49 @@ This module is intended to be a bridge between different image processing relate
 when dealing intermediate tasks.
 """
 
+import sys
+
 import cv2
-import numpy as np
 import dlib
+import numpy as np
+from path import Path
+
+ALLOWED_IMAGE_EXTENSIONS = ("*.jpg", "*.jpeg", "*.png", "*.tiff")
 
 # General.
-def resize(source, width=None, height=None):
+def loop_images_in_folder(path_):
+
+    """
+    Searches for images of extension in allowed extensions within the given path and shows them
+    in a 500px scaled to height window.
+    """
+
+    path_ = Path(path_)
+
+    if not path_.isdir():
+        print("[lb_helpers][ERROR]: Given path is not valid!")
+        return
+
+    for ext in ALLOWED_IMAGE_EXTENSIONS:
+
+        images_for_extension = list(path_.walkfiles(ext))
+
+        for i, image_path in enumerate(images_for_extension):
+            print("[lb_helpers][INFO]: #{}) {} of total {} images.".format(i+1, image_path, len(images_for_extension)))
+            print(image_path.abspath())
+            color = cv2.imread(image_path.abspath(), cv2.IMREAD_UNCHANGED)
+            color_scaled = resize(color, height=500)
+            window = "#{} ext: {}".format(str(i+1), ext)
+            cv2.imshow(window, color_scaled)
+            key = cv2.waitKey(0)
+
+            if key == 113:
+                return
+
+            cv2.destroyWindow(window)
+
+
+def resize(source, width=None, height=None) -> np.ndarray:
 
     if not (width or height):
         print("[lb_helpers][ERROR]: Width or height needed!")
@@ -27,7 +64,7 @@ def resize(source, width=None, height=None):
 
 
 # dlib related.
-def dlib_rectangle_to_bounding_box(rectangle):
+def dlib_rectangle_to_bounding_box(rectangle) -> tuple:
 
     """
     Takes rectangle object and returns OpenCV style bounding box coordinates.
@@ -50,4 +87,3 @@ def dlib_shape_to_np_array(shape, dtype="int") -> np.ndarray:
         coordinates[i] = (shape.part(i).x, shape.part(i).y)
 
     return coordinates
-
