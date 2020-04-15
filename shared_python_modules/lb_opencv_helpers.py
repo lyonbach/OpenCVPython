@@ -12,8 +12,12 @@ import numpy as np
 from path import Path
 
 ALLOWED_IMAGE_EXTENSIONS = ("*.jpg", "*.jpeg", "*.png", "*.tiff")
+TOP_TO_BOTTOM = 0
+BOTTOM_TO_TOP = 1
+LEFT_TO_RIGHT = 2
+RIGHT_TO_LEFT = 3
 
-# General.
+# General
 def loop_images_in_folder(path_):
 
     """
@@ -46,6 +50,29 @@ def loop_images_in_folder(path_):
             cv2.destroyWindow(window)
 
 
+def sort_contours(contours, method="left-to-right"):
+
+    """
+    Returns the sorted contours.
+    """
+    # initialize the reverse flag and sort index
+    reverse = False
+    i = 0
+
+    if method == RIGHT_TO_LEFT or method == BOTTOM_TO_TOP:
+        reverse = True
+
+    if method in (TOP_TO_BOTTOM, BOTTOM_TO_TOP):
+        i = 1
+
+    sorted_contours = np.copy(contours)
+    for j, item in sorted(contours, key=lambda c: c[i], reverse=reverse):
+        sorted_contours[j] = item
+
+    return sorted_contours
+
+
+# Transformation
 def resize(source, width=None, height=None) -> np.ndarray:
 
     if not (width or height):
@@ -57,13 +84,14 @@ def resize(source, width=None, height=None) -> np.ndarray:
 
         if width:
             height = source_height * width / source_width
+
         else:
             width = source_width * height / source_height
 
     return cv2.resize(source, (int(width), int(height)))
 
 
-# dlib related.
+# dlib related
 def dlib_rectangle_to_bounding_box(rectangle) -> tuple:
 
     """
