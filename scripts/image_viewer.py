@@ -23,7 +23,7 @@ if __name__ == "__main__":
     image = cv2.imread(image_path, cv2.IMREAD_UNCHANGED)
     
     # The image should always fit the screen. For this reason it is scaled.
-    ocvh.resize(image, height=500)
+    image = ocvh.resize(image, height=500)
 
     # Show image.
     window_name = image_path.basename().split(".")[0]
