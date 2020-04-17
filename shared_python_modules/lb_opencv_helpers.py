@@ -50,6 +50,22 @@ def loop_images_in_folder(path_):
             cv2.destroyWindow(window)
 
 
+def sort_box_points(box):
+
+    """
+    Returns top-left, top-right, bottom-right, bottom-left points from the given box respectively.
+    """
+
+    x_sorted_box = box[np.argsort(box[:, 0]), :]
+
+    left_most, right_most = x_sorted_box[:2], x_sorted_box[2:]
+    top_left = left_most[np.argsort(left_most[:, 1])][0]
+    top_right = right_most[np.argsort(right_most[:, 1])][0]
+    bot_left = left_most[np.argsort(left_most[:, 1])][1]
+    bot_right = right_most[np.argsort(right_most[:, 1])][1]
+    return top_left, top_right, bot_right, bot_left
+
+
 def sort_contours(contours, method="left-to-right"):
 
     """
