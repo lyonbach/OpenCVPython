@@ -6,7 +6,7 @@
         {
             "label": "Run Current Python File",
             "type": "shell",
-            "command": "/usr/bin/python3",
+            "command": "/usr/local/bin/python3.7",
             "args": ["${file}"]
         }
     ]

@@ -4,12 +4,97 @@ This module is intended to be a bridge between different image processing relate
 when dealing intermediate tasks.
 """
 
-import cv2
-import numpy as np
-import dlib
+import sys
 
-# General.
-def resize(source, width=None, height=None):
+import cv2
+import dlib
+import numpy as np
+from path import Path
+
+ALLOWED_IMAGE_EXTENSIONS = ("*.jpg", "*.jpeg", "*.png", "*.tiff")
+TOP_TO_BOTTOM = 0
+BOTTOM_TO_TOP = 1
+LEFT_TO_RIGHT = 2
+RIGHT_TO_LEFT = 3
+
+# General
+def loop_images_in_folder(path_):
+
+    """
+    Searches for images of extension in allowed extensions within the given path and shows them
+    in a 500px scaled to height window.
+    """
+
+    path_ = Path(path_)
+
+    if not path_.isdir():
+        print("[lb_helpers][ERROR]: Given path is not valid!")
+        return
+
+    for ext in ALLOWED_IMAGE_EXTENSIONS:
+
+        images_for_extension = list(path_.walkfiles(ext))
+
+        for i, image_path in enumerate(images_for_extension):
+            print("[lb_helpers][INFO]: #{}) {} of total {} images.".format(i+1, image_path, len(images_for_extension)))
+            print(image_path.abspath())
+            color = cv2.imread(image_path.abspath(), cv2.IMREAD_UNCHANGED)
+            color_scaled = resize(color, height=500)
+            window = "#{} ext: {}".format(str(i+1), ext)
+            cv2.imshow(window, color_scaled)
+            key = cv2.waitKey(0)
+
+            if key == 113:
+                return
+
+            cv2.destroyWindow(window)
+
+
+def sort_box_points(box):
+
+    """
+    Returns top-left, top-right, bottom-right, bottom-left points from the given box respectively.
+    """
+
+    x_sorted_box = box[np.argsort(box[:, 0]), :]
+
+    left_most, right_most = x_sorted_box[:2], x_sorted_box[2:]
+    top_left = left_most[np.argsort(left_most[:, 1])][0]
+    top_right = right_most[np.argsort(right_most[:, 1])][0]
+    bot_left = left_most[np.argsort(left_most[:, 1])][1]
+    bot_right = right_most[np.argsort(right_most[:, 1])][1]
+    return top_left, top_right, bot_right, bot_left
+
+
+def sort_contours(contours, method="left-to-right") -> list:
+
+    """
+    Returns the sorted contours as list.
+    """
+
+    # Initialize the reverse flag and sort index
+    reverse = False
+    i = 0
+
+    if method == RIGHT_TO_LEFT or method == BOTTOM_TO_TOP:
+        reverse = True
+
+    if method in (TOP_TO_BOTTOM, BOTTOM_TO_TOP):
+        i = 1
+
+    boundingBoxes = [cv2.boundingRect(c) for c in contours]
+    (contours, boundingBoxes) = zip(*sorted(zip(contours, boundingBoxes),
+                                        key=lambda b: b[1][i], reverse=reverse))
+
+    # return the list of sorted contours and bounding boxes
+    return contours
+
+
+    # return sorted_contours
+
+
+# Transformation
+def resize(source, width=None, height=None) -> np.ndarray:
 
     if not (width or height):
         print("[lb_helpers][ERROR]: Width or height needed!")
@@ -20,14 +105,15 @@ def resize(source, width=None, height=None):
 
         if width:
             height = source_height * width / source_width
+
         else:
             width = source_width * height / source_height
 
     return cv2.resize(source, (int(width), int(height)))
 
 
-# dlib related.
-def dlib_rectangle_to_bounding_box(rectangle):
+# dlib related
+def dlib_rectangle_to_bounding_box(rectangle) -> tuple:
 
     """
     Takes rectangle object and returns OpenCV style bounding box coordinates.
@@ -50,4 +136,3 @@ def dlib_shape_to_np_array(shape, dtype="int") -> np.ndarray:
         coordinates[i] = (shape.part(i).x, shape.part(i).y)
 
     return coordinates
-
