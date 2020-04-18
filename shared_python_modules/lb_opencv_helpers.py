@@ -66,12 +66,13 @@ def sort_box_points(box):
     return top_left, top_right, bot_right, bot_left
 
 
-def sort_contours(contours, method="left-to-right"):
+def sort_contours(contours, method="left-to-right") -> list:
 
     """
-    Returns the sorted contours.
+    Returns the sorted contours as list.
     """
-    # initialize the reverse flag and sort index
+
+    # Initialize the reverse flag and sort index
     reverse = False
     i = 0
 
@@ -81,11 +82,15 @@ def sort_contours(contours, method="left-to-right"):
     if method in (TOP_TO_BOTTOM, BOTTOM_TO_TOP):
         i = 1
 
-    sorted_contours = np.copy(contours)
-    for j, item in sorted(contours, key=lambda c: c[i], reverse=reverse):
-        sorted_contours[j] = item
+    boundingBoxes = [cv2.boundingRect(c) for c in contours]
+    (contours, boundingBoxes) = zip(*sorted(zip(contours, boundingBoxes),
+                                        key=lambda b: b[1][i], reverse=reverse))
 
-    return sorted_contours
+    # return the list of sorted contours and bounding boxes
+    return contours
+
+
+    # return sorted_contours
 
 
 # Transformation
