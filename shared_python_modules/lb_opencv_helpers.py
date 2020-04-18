@@ -93,6 +93,26 @@ def sort_contours(contours, method="left-to-right") -> list:
     # return sorted_contours
 
 
+def get_bounding_box_from_contour(contour) -> tuple:
+
+    """
+    Returns the boundingbox top-left, and bottom-right points from the given contour.
+    """
+
+    error_message = "[ERROR]: Contour shape must be (#, 1, 2)"
+    assert len(contour.shape) == 3, error_message
+    assert contour.shape[1] == 1, error_message
+    assert contour.shape[2] == 2, error_message
+
+    x_values = contour[:, 0][:, 0]
+    y_values = contour[:, 0][:, 1]
+
+    x1 = np.min(x_values); x2 = np.max(x_values)
+    y1 = np.min(y_values); y2 = np.max(y_values)
+
+    return (x1, y1), (x2, y2)
+
+
 # Transformation
 def resize(source, width=None, height=None) -> np.ndarray:
 
