@@ -1,12 +1,13 @@
 # A very simple script for viewing images.
 
 import argparse
+import os
 import sys
 
 import cv2
 from path import Path
-
-sys.path.append(Path(__file__).parent.parent / "shared_python_modules")  # Hardcoded!!!
+base_path = Path(os.environ["REPOSITORIES"]) / "lbOpenCVPython"
+sys.path.append(base_path / "shared_python_modules")
 
 import lb_opencv_helpers as ocvh
 
